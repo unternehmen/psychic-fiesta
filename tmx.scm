@@ -1,4 +1,4 @@
-;; guile-zlib
+;; guile-tmx
 ;; Original file Copyright (c) 2013 David Thompson <dthompson2@worcester.edu>
 ;; Modifications Copyright (c) 2017 Charlie Murphy <cmsmurp00@gmail.com>
 
