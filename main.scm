@@ -30,13 +30,14 @@
                        int32 int32)
                  (list x y width height)))
 
-(define (render-copy renderer texture x y)
+;; Ripped and modified from the Guile-SDL2 source code.
+(define (render-copy renderer texture srcrect destrect)
   "Copy TEXTURE to the rendering target of RENDERER at (X, Y)."
   (let ((result (ffi:sdl-render-copy
                   ((@@ (sdl2 render) unwrap-renderer) renderer)
                   ((@@ (sdl2 render) unwrap-texture) texture)
-                  (@@ (sdl2 render) %null-pointer)
-                  (rect x y 100 100))))
+                  srcrect
+                  destrect)))
     (unless (zero? result)
       (sdl-error "render-copy" "failed to copy texture"))))
 
@@ -52,7 +53,8 @@
               (set! done #t))
             (loop (poll-event)))))
       (clear-renderer ren)
-      (render-copy ren texture 50 0)
+      (render-copy ren texture (rect 0 0 32 32)
+                               (rect 0 0 32 32))
       (present-renderer ren)
       (usleep 40)
       (if (not done) (main-loop ren)))))
