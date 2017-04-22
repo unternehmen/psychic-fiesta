@@ -16,6 +16,8 @@
 ; along with psychic-fiesta. If not, see <http://www.gnu.org/licenses/>.
 
 (use-modules (system foreign)
+             (srfi srfi-1)
+             (srfi srfi-9)
              (sdl2)
              (sdl2 render)
              (sdl2 surface)
@@ -40,6 +42,51 @@
                   destrect)))
     (unless (zero? result)
       (sdl-error "render-copy" "failed to copy texture"))))
+
+(define-record-type <zone>
+  (zone width height data)
+  zone?
+  (width zone-width)
+  (height zone-height)
+  (data zone-data))
+
+(define test-zone
+  (zone 10 10 '(0 0 0 0 0 0 0 0 0 0
+                0 0 0 0 0 0 0 0 0 0
+                0 0 0 0 0 0 0 0 0 0
+                0 0 0 0 0 0 0 0 0 0
+                0 0 0 0 0 0 0 0 0 0
+                0 0 0 0 0 0 0 0 0 0
+                0 0 0 0 0 0 0 20 0 0
+                0 0 0 0 0 0 0 0 0 0
+                0 0 0 0 0 0 0 0 0 0
+                0 0 0 0 0 0 0 0 0 0)))
+
+(define (flat-map f lst)
+  "Map function F over LST and flatten the resulting list."
+  (apply append (map f lst)))
+
+(define (cartesian-product a b)
+  "Return a list containing pairs of elemnts of A with elements of B."
+  (flat-map
+    (lambda (x)
+      (map (lambda (y) (cons x y)) b))
+    a))
+
+(define (render-zone renderer zone tex)
+  "Render ZONE with the tileset texture TEX using RENDERER."
+  (for-each
+    (lambda (pair)
+      (let* ((x (car pair))
+             (y (cdr pair))
+             (i (+ x (* y (zone-width zone))))
+             (t (list-ref (zone-data zone) i))
+             (tx (* 8 (modulo t 16)))
+             (ty (* 8 (floor (/ t 16)))))
+        (render-copy renderer tex (rect tx ty 8 8)
+                                  (rect (* x 8) (* y 8) 8 8))))
+    (cartesian-product (iota (zone-width zone))
+                       (iota (zone-height zone)))))
 
 (define up-state #f)
 (define left-state #f)
@@ -75,6 +122,7 @@
       (if down-state (set! y (+ y 1)))
       (if up-state (set! y (- y 1)))
       (clear-renderer ren)
+      (render-zone ren test-zone texture)
       (render-copy ren texture (rect 0 0 32 32)
                                (rect x y 32 32))
       (present-renderer ren)
