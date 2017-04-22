@@ -122,7 +122,10 @@
 
 ;; Helper functions for sxml
 (define (get-attr attr node)
-  (car ((sxpath `(@ ,attr *text*)) node)))
+  (let ((attr ((sxpath `(@ ,attr *text*)) node)))
+    (if (null? attr)
+      '()
+      (car attr))))
 
 (define (get-text node)
   (car ((sxpath '(*text*)) node)))
@@ -152,7 +155,9 @@
   (let* ((encoding    (get-attr 'encoding data))
          (compression (get-attr 'compression data))
          (text        (get-text data)))
-    (uncompress-layer (decode-layer text encoding) compression)))
+    (if (null? compression)
+      (decode-layer text encoding)
+      (uncompress-layer (decode-layer text encoding) compression))))
 
 (define (load-tmx-layer layer)
   (let* ((width  (string->number (get-attr 'width layer)))
