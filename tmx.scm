@@ -1,7 +1,6 @@
-;; This file was taken from guile-tmx.
-
-;; Original file Copyright (c) 2013  David Thompson (davexunit on github)
-;; Modifications Copyright (c) 2017  Charlie Murphy (ChillyCider on github)
+;; guile-zlib
+;; Original file Copyright (c) 2013 David Thompson <dthompson2@worcester.edu>
+;; Modifications Copyright (c) 2017 Charlie Murphy <cmsmurp00@gmail.com>
 
 ;; This file is free software: you can redistribute it and/or modify it
 ;; under the terms of the GNU General Public License as published by the
