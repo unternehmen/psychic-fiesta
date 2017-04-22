@@ -41,7 +41,12 @@
     (unless (zero? result)
       (sdl-error "render-copy" "failed to copy texture"))))
 
-(define (main-loop ren)
+(define up-state #f)
+(define left-state #f)
+(define right-state #f)
+(define down-state #f)
+
+(define (main-loop ren x y)
   (begin
     (let* ((done #f)
            (surface (load-image "image.png"))
@@ -49,15 +54,32 @@
       (let loop ((event (poll-event)))
         (if event
           (begin
-            (if (quit-event? event)
-              (set! done #t))
+            (cond
+              ((quit-event? event)
+               (set! done #t))
+              ((and (keyboard-down-event? event))
+               (case (keyboard-event-key event)
+                 ((right) (set! right-state #t))
+                 ((up)    (set! up-state #t))
+                 ((down)  (set! down-state #t))
+                 ((left)  (set! left-state #t))))
+              ((and (keyboard-up-event? event))
+               (case (keyboard-event-key event)
+                 ((right) (set! right-state #f))
+                 ((up)    (set! up-state #f))
+                 ((down)  (set! down-state #f))
+                 ((left)  (set! left-state #f)))))
             (loop (poll-event)))))
+      (if right-state (set! x (+ x 1)))
+      (if left-state (set! x (- x 1)))
+      (if down-state (set! y (+ y 1)))
+      (if up-state (set! y (- y 1)))
       (clear-renderer ren)
       (render-copy ren texture (rect 0 0 32 32)
-                               (rect 0 0 32 32))
+                               (rect x y 32 32))
       (present-renderer ren)
-      (usleep 40)
-      (if (not done) (main-loop ren)))))
+      (usleep 36000)
+      (if (not done) (main-loop ren x y)))))
 
 (begin
   (sdl-init)
@@ -65,6 +87,7 @@
   (call-with-window (make-window #:size '(300 300))
     (lambda (window)
       (begin
-        (call-with-renderer (make-renderer window) main-loop))))
+        (call-with-renderer (make-renderer window)
+          (lambda (ren) (main-loop ren 0 0))))))
   (image-quit)
   (sdl-quit))
