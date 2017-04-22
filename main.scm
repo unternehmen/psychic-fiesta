@@ -16,6 +16,8 @@
 ; along with psychic-fiesta. If not, see <http://www.gnu.org/licenses/>.
 
 (use-modules (system foreign)
+             (rnrs bytevectors)
+             (tmx)
              (srfi srfi-1)
              (srfi srfi-9)
              (sdl2)
@@ -50,17 +52,16 @@
   (height zone-height)
   (data zone-data))
 
+(define loaded-tmx (load-tmx-map "hotel.tmx"))
+
 (define test-zone
-  (zone 10 10 '(0 0 0 0 0 0 0 0 0 0
-                0 0 0 0 0 0 0 0 0 0
-                0 0 0 0 0 0 0 0 0 0
-                0 0 0 0 0 0 0 0 0 0
-                0 0 0 0 0 0 0 0 0 0
-                0 0 0 0 0 0 0 0 0 0
-                0 0 0 0 0 0 0 20 0 0
-                0 0 0 0 0 0 0 0 0 0
-                0 0 0 0 0 0 0 0 0 0
-                0 0 0 0 0 0 0 0 0 0)))
+  (zone (tmx-map-width loaded-tmx)
+        (tmx-map-height loaded-tmx)
+        (map 1-
+          (bytevector->uint-list
+            (tmx-layer-tiles (car (tmx-map-layers loaded-tmx)))
+            (endianness little)
+            4))))
 
 (define (flat-map f lst)
   "Map function F over LST and flatten the resulting list."
